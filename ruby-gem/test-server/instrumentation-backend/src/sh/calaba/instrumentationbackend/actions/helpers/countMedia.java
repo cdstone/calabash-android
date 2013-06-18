@@ -20,49 +20,99 @@ public class countMedia implements Action {
     // arg[1] = the specified filter
     @Override
     public Result execute(String... args) {
-        Result result = new Result();
-        String filter = "";
-        String path = args[0];
-        filter = args[1];
+		Result result = new Result();
+		String filter = "";
+		String message = "";
+		String path = args[0];
+		filter = args[1];
+		int numberOfImages = 0;
         
-        File dir = new File(Environment.getExternalStorageDirectory() + "/" + path);
-        System.out.println(dir);
-        
-        File[] files = dir.listFiles();
-        int numberOfImages = 0;
-        if (files != null) {
-            // count photo files since not filtered against them
-			if(!filter.equals("video")){
-				for(int i = 0; i < files.length; i++){
-					if(filterForPhotos(files[i].getName())){
-						numberOfImages++;
-					}
-				}
-			}
-            // count video files since not filtered against them
-			if(!filter.equals("photo")){
-				for(int i = 0; i < files.length; i++){
-					if(filterForVideos(files[i].getName())){
-						numberOfImages++;
-					}
-				}
-			}
-            String message = "" + numberOfImages;
-            result.setMessage(message);
+		if (path.equals("**ALL_MEDIA**")) {
+			File dir = new File(Environment.getExternalStorageDirectory() + "");
+			numberOfImages = countMedia(dir.listFiles(), filter);
+			message += numberOfImages;
             result.setSuccess(true);
+		} else {
+			File dir = new File(Environment.getExternalStorageDirectory() + "/"
+                                + path);
+			File[] files = dir.listFiles();
+			if (files != null) {
+				numberOfImages = countFiles(files, filter);
+				message += numberOfImages;
+				result.setSuccess(true);
+			} else {
+				message = "Directory doesn't exist!";
+				result.setSuccess(false);
+			}
 		}
-        else{
-            String message = "Directory doesn't exist!";
-            result.setMessage(message);
-            result.setSuccess(false);
-        }
-        return result;
-    }
+		result.setMessage(message);
+		return result;
+	}
     
-    /**
+	/**
+	 * counts the files in the array that correspond to the filter
+	 *
+	 * @param files
+	 * @param filter
+	 * @return the number of files counted
+	 */
+	private int countFiles(File[] files, String filter) {
+		int result = 0;
+		if (files != null) {
+			for (File fi : files) {
+				if (checkFilter(fi, filter)) {
+					result++;
+				}
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * recursive call that counts the media files in the input
+	 * and the input's sub-directories that correspond to the filter
+	 *
+	 * @param files
+	 * @param filter
+	 * @return
+	 */
+	private int countMedia(File[] files, String filter) {
+		int result = 0;
+        if(files != null){
+            for (File fi : files) {
+                if (fi.isDirectory() && !fi.getName().equals(".thumbnails")) {
+                    result += countMedia(fi.listFiles(), filter);
+                } else if (checkFilter(fi, filter)) {
+                    result++;
+                }
+            }
+        }
+		return result;
+	}
+    
+	/**
+	 * check whether the inputed filter counts the inputed file
+	 *
+	 * @param file
+	 * @param filter
+	 * @return true if counted
+	 */
+	private boolean checkFilter(File file, String filter) {
+		boolean result = false;
+		if (!filter.equals("video")) {
+			result = filterForPhotos(file.getName());
+		}
+		if (!filter.equals("photo") && !result) {
+			result = filterForVideos(file.getName());
+		}
+		return result;
+	}
+    
+	/**
 	 * filter function for photo file extensions
-	 * @param dirName - name of inputted file
-	 * @return true if file name has a photo extension
+	 *
+	 * @param dirName
+	 * @return true if has a photo extension
 	 */
 	private boolean filterForPhotos(String dirName) {
 		return (dirName.endsWith(".png") || dirName.endsWith(".jpg")
@@ -70,11 +120,12 @@ public class countMedia implements Action {
 				|| dirName.endsWith(".bmp") || dirName.endsWith(".webp"));
 	}
     
-    /**
-     * filter function for video file extensions
-     * @param dirName - name of inputted file
-     * @return true if file name has a video extension
-     */
+	/**
+	 * filter function for video file extensions
+	 *
+	 * @param dirName
+	 * @return true if has a video extension
+	 */
 	private boolean filterForVideos(String dirName) {
 		return (dirName.endsWith(".3gp") || dirName.endsWith(".mp4")
 				|| dirName.endsWith(".ts") || dirName.endsWith(".webm")

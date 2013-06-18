@@ -746,7 +746,8 @@ module Operations
     
   # counts the media files in the specified folder according to the filter
   # filter type can be "video" or "photo" or "none" ("none" will only count videos and photos; invalid filters default to "none")
-  def count_media(path, filter="none")
+  # **ALL_MEDIA** will count all the photos and videos on the device
+  def count_media(path="**ALL_MEDIA**", filter="none")
     res = performAction("count_media", path, filter)
     res["message"]
   end
