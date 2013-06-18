@@ -202,14 +202,14 @@ Uses [adb](http://developer.android.com/tools/help/adb.html) so same rules apply
 
 * Won't be able to pull or push from restricted folders such as /data/data
 * If destination path already exists, it's overwritten without warning
-* For files, full destination path must be provided, ie:
+* For files, full destination path should not be provided, ie:
 
-Won't work:
+Will work:
 ```
 push("file.jpg", "/sdcard/folder")
 ```
 
-Will work:
+Won't work:
 ```
 push("file.jpg", "/sdcard/folder/file.jpg")
 ```

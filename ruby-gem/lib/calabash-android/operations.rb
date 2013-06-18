@@ -116,6 +116,14 @@ module Operations
   def set_gps_coordinates(latitude, longitude)
     default_device.set_gps_coordinates(latitude, longitude)
   end
+    
+  def mkdir(path)
+    default_device.mkdir(path)
+  end
+    
+  def update_media(path="")
+    default_device.update_media(path)
+  end
 
   def query(uiquery, *args)
     converted_args = []
@@ -443,6 +451,16 @@ module Operations
       cmd = "#{adb_command} push #{local} #{remote}"
       raise "Could not push #{local} to #{remote}" unless system(cmd)
     end
+      
+    def mkdir(path)
+      cmd = "#{adb_command} shell mkdir -p /sdcard/#{path}"
+      raise "Could not create the new directory" unless system(cmd)
+    end
+      
+    def update_media(path)
+      cmd = "#{adb_command} shell \"am broadcast -a android.intent.action.MEDIA_MOUNTED -d file:///mnt/sdcard/#{path}\""
+      raise "Could not update media on the device" unless system(cmd)
+    end
 
     def start_test_server_in_background(options={})
       raise "Will not start test server because of previous failures." if ::Cucumber.wants_to_quit
@@ -715,6 +733,22 @@ module Operations
 
   def make_http_request(options)
     default_device.make_http_request(options)
+  end
+
+  # pushes the file at the specified path to the device's sdcard to the path represented by "album"
+  # calls a broadcast to the media_scanenr so that the added files show up in the gallery
+  def add_media(path, album="Media")
+    album = album[1..album.length] if album =~ /\A[\/].*/
+    mkdir(album)
+    push(path, "/sdcard/#{album}")
+    update_media(album);
+  end
+    
+  # counts the media files in the specified folder according to the filter
+  # filter type can be "video" or "photo" or "none" ("none" will only count videos and photos; invalid filters default to "none")
+  def count_media(path, filter="none")
+    res = performAction("count_media", path, filter)
+    res["message"]
   end
 
 end
