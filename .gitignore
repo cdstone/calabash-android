@@ -1,6 +1,7 @@
 *.class
 gen
 staging
+.DS_STORE
 instrumentation_backend/.settings
 instrumentation_backend/assets/foo.bar
 *.png
