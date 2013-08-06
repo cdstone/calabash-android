@@ -452,6 +452,8 @@ module Operations
       raise "Could not push #{local} to #{remote}" unless system(cmd)
     end
       
+    # creates a new folder on the sdcard according to the path
+    # @path (String) - path of new folders to be made on the sdcard
     def mkdir(path)
       cmd = "#{adb_command} shell mkdir -p /sdcard/#{path}"
       raise "Could not create the new directory" unless system(cmd)
@@ -736,7 +738,9 @@ module Operations
   end
 
   # pushes the file at the specified path to the device's sdcard to the path represented by "album"
-  # calls a broadcast to the media_scanenr so that the added files show up in the gallery
+  # calls a broadcast to the media_scanner so that the added files show up in the gallery
+  # @path (String) - the directory path to the media file
+  # @album (String) - the album/folder name
   def add_media(path, album="Media")
     album = album[1..album.length] if album =~ /\A[\/].*/
     mkdir(album)
@@ -747,10 +751,14 @@ module Operations
   # counts the media files in the specified folder according to the filter
   # filter type can be "video" or "photo" or "none" ("none" will only count videos and photos; invalid filters default to "none")
   # **ALL_MEDIA** will count all the photos and videos on the device
+  # @path (String) = folder on the device to count in
+  # @filter (String) - filter type
   def count_media(path="**ALL_MEDIA**", filter="none")
     res = performAction("count_media", path, filter)
     res["message"]
   end
+    
+
 
 end
 
