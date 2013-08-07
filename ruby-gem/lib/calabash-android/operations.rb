@@ -743,6 +743,7 @@ module Operations
   # @album (String) - the album/folder name
   def add_media(path, album="Media")
     album = album[1..album.length] if album =~ /\A[\/].*/
+    album.gsub!(" ", "\ ")
     mkdir(album)
     push(path, "/sdcard/#{album}")
     update_media(album);
